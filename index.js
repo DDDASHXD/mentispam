@@ -1,50 +1,55 @@
-// {"emoji":"heart1","color":"theme-fill-color-0","vote_key":"al3dddw2ui46","amount":1}
 const axios = require('axios');
+const {sleep, getStatus, rand} = require('./utils');
 
-const sleep = async (ms) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-} 
+// ---- Testurl ----
+// https://www.menti.com/core/audience/reactions/oifwx29vqwws/publish
+// -----------------
 
-const getStatus = (status) => {
-  switch (status) {
-    case 201:
-      return '201 - Success';
-    default: 
-      return status;
-  }
+// get command line args
+const args = process.argv.slice(2);
+
+// find an argument that starts with https://
+const urlIndex = args.findIndex(arg => arg.startsWith('https://'));
+if (urlIndex == -1) {
+  console.error('No URL provided');
+  process.exit(1);
 }
+const userTimeout = args.indexOf('-t') + 1;
+const userColor = args.indexOf('-c') + 1;
+const userRepeat = args.indexOf('-r') + 1;
+const userVoteKey = args.indexOf('-v') + 1;
+const userAmount = args.indexOf('-a') + 1;
+const userEmoji = args.indexOf('-e') + 1;
+
+// Set defaults
+const url = args[urlIndex];
+let timeout = parseInt(args[userTimeout]) || 50;
+let color = parseInt(args[userColor]) || null;
+let repeat = parseInt(args[userRepeat]) || 500;
+let voteKey = args[userVoteKey] || 'al3dddw2ui46';
+let amount = parseInt(args[userAmount]) || 3;
+let emoji = args[userEmoji] || 'thumbsup';
 
 const run = async () => {
 
-  for (let i = 0; i < 500; i++) {
-    const rand = Math.floor(Math.random() * 7);
+  for (let i = 0; i < repeat; i++) {
+    if (!userColor) {
+      color = rand();
+    }
+
     try {
-      const res = await axios.post('https://www.menti.com/core/audience/reactions/oifwx29vqwws/publish', {
-        emoji: 'thumbsup',
-        color: `theme-fill-color-${rand}`,
-        vote_key: 'al3dddw2ui46',
-        amount: 3,
+      const res = await axios.post(url, {
+        emoji,
+        color: `theme-fill-color-${color}`,
+        vote_key: voteKey,
+        amount,
       });
-      console.log(`sent ${i} votes. Status: ${getStatus(res.status)}. Color: theme-fill-color-${rand}`)
+      console.log(`sent ${i} votes. Status: ${getStatus(res.status)}. Color: theme-fill-color-${color}`)
     } catch (e) {
       console.error("Too many requests! Probably...");
     }
-    await sleep(50)
+    await sleep(timeout)
   }
 }
-
-// const run = async () => {
-
-//   for (let i = 0; i < 500; i++) {
-//     const rand = Math.floor(Math.random() * 7);
-//     try {
-//       const res = await axios.post('https://www.menti.com/core/votes/ipz44ynri8oh', {"vote":"447597553","type":"choices"});
-//       console.log(`sent ${i} votes. Status: ${getStatus(res.status)}. Color: theme-fill-color-${rand}`)
-//     } catch (e) {
-//       console.error(e);
-//     }
-//     await sleep(80)
-//   }
-// }
 
 run();
