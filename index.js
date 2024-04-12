@@ -18,6 +18,10 @@ const userTimeout = args.indexOf('-t') + 1;
 const userColor = args.indexOf('-c') + 1;
 const userRepeat = args.indexOf('-r') + 1;
 const userVoteKey = args.indexOf('-v') + 1;
+if (userVoteKey == 0) {
+  console.error('No vote key provided');
+  process.exit(1);
+}
 const userAmount = args.indexOf('-a') + 1;
 const userEmoji = args.indexOf('-e') + 1;
 
@@ -26,11 +30,11 @@ const url = args[urlIndex];
 let timeout = parseInt(args[userTimeout]) || 50;
 let color = parseInt(args[userColor]) || null;
 let repeat = parseInt(args[userRepeat]) || 500;
-let voteKey = args[userVoteKey] || 'al3dddw2ui46';
+let voteKey = args[userVoteKey];
 let amount = parseInt(args[userAmount]) || 3;
 let emoji = args[userEmoji] || 'thumbsup';
 
-const run = async () => {
+(async () => {
 
   for (let i = 0; i < repeat; i++) {
     if (!userColor) {
@@ -38,18 +42,16 @@ const run = async () => {
     }
 
     try {
-      const res = await axios.post(url, {
-        emoji,
+      const res = await axios.post("https://www.menti.com/core/audience/reactions/wi7k691ju28c/publish", {
+        emoji: "thumbsup",
         color: `theme-fill-color-${color}`,
-        vote_key: voteKey,
-        amount,
+        vote_key: "al5nm2x85d4r",
+        amount: 3,
       });
-      console.log(`sent ${i} votes. Status: ${getStatus(res.status)}. Color: theme-fill-color-${color}`)
+      console.log(`Request: ${i} - Status: '${getStatus(res.status)}' - Color: theme-fill-color-${color}`)
     } catch (e) {
       console.error("Too many requests! Probably...");
     }
     await sleep(timeout)
   }
-}
-
-run();
+})();
